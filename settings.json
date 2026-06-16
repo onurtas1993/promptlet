@@ -1,0 +1,8 @@
+{
+    "provider": "anthropic",
+    "attributes": "Critical Thinker",
+    "api_key": "XXXXX",
+    "base_url": "http://192.168.178.20:1234",
+    "model": "gemma-4-e2b-it",
+    "max_tokens": 7777
+}
