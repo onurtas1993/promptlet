@@ -1,73 +1,62 @@
-from PySide6.QtCore import QObject, QThread, Slot
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 
 from promptlet_client.model.chat_session import ChatSession
 from promptlet_client.model.chatbot_settings import ChatbotSettings
-from promptlet_client.repository.settings_repository import SettingsRepository
-from promptlet_client.provider.provider_factory import ProviderFactory
 from promptlet_client.provider.base_provider import BaseProvider
+from promptlet_client.provider.provider_factory import ProviderFactory
 from promptlet_client.service.prompt_service import system_prompt
 from promptlet_client.view.chat_view import ChatView
-from promptlet_client.view.settings_view import SettingsView
 from promptlet_client.worker.chat_request_worker import ChatRequestWorker
 
 
-class ChatbotController(QObject):
+class ChatController(QObject):
+    settings_requested = Signal()
+    closing = Signal()
+
     def __init__(
         self,
         chat_view: ChatView,
-        settings_view: SettingsView,
         session: ChatSession,
-        settings_repository: SettingsRepository,
+        settings: ChatbotSettings,
         provider: BaseProvider,
     ) -> None:
         super().__init__()
 
         self.chat_view = chat_view
-        self.settings_view = settings_view
         self.session = session
-        self.settings_repository = settings_repository
+        self.settings = settings
         self.provider = provider
-        self.settings: ChatbotSettings = self.settings_repository.load()
 
         self._thread: QThread | None = None
         self._worker: ChatRequestWorker | None = None
 
         self._connect_signals()
-        self.settings_view.set_settings(self.settings)
 
     def _connect_signals(self) -> None:
-        self.chat_view.settings_requested.connect(self.open_settings)
+        self.chat_view.settings_requested.connect(self.settings_requested.emit)
         self.chat_view.reset_requested.connect(self.reset_chat)
         self.chat_view.question_submitted.connect(self.ask)
-        self.chat_view.closing.connect(self.save_current_settings)
-        self.settings_view.settings_saved.connect(self.save_settings)
+        self.chat_view.closing.connect(self.closing.emit)
 
-    def open_settings(self) -> None:
-        self.settings_view.set_settings(self.settings)
-        self.settings_view.show()
-        self.settings_view.raise_()
-        self.settings_view.activateWindow()
-
-    def save_settings(self, settings: ChatbotSettings) -> None:
+    @Slot(ChatbotSettings)
+    def update_settings(self, settings: ChatbotSettings) -> None:
         self.settings = settings
         self.provider = ProviderFactory.create(settings.provider)
-        self.settings_repository.save(settings)
+        self.add_system_message("Settings saved.", "#2eff9b")
+
+    def add_system_message(self, message: str, color: str = "#ff5555") -> None:
         self.chat_view.add_chat_line(
             "System",
-            "Settings saved.",
-            "#2eff9b",
+            message,
+            color,
         )
-
-    def save_current_settings(self) -> None:
-        self.settings_repository.save(self.settings)
 
     def ask(self, question: str) -> None:
         if self._thread is not None:
             return
 
         if not self.settings.api_key.strip():
-            self.chat_view.add_chat_line(
-                "System",
+            self.add_system_message(
                 "API key is empty. Open Settings and enter your API key.",
                 "#ff5555",
             )
@@ -119,11 +108,7 @@ class ChatbotController(QObject):
 
     @Slot(str)
     def _handle_error(self, error: str) -> None:
-        self.chat_view.add_chat_line(
-            "System",
-            error,
-            "#ff5555",
-        )
+        self.add_system_message(error, "#ff5555")
 
     @Slot()
     def _request_finished(self) -> None:

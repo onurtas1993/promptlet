@@ -1,40 +1,20 @@
 import sys
 
-from promptlet_client.utils.path_resolver import resource_path
-
-from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication
 
-from promptlet_client.controller.chatbot_controller import ChatbotController
-from promptlet_client.model.chat_session import ChatSession
-from promptlet_client.provider.provider_factory import ProviderFactory
-from promptlet_client.repository.settings_repository import SettingsRepository
-from promptlet_client.view.chat_view import ChatView
-from promptlet_client.view.settings_view import SettingsView
+from promptlet_client.application_manager import ApplicationManager
+from promptlet_client.utils.path_resolver import resource_path
 
 
 def main() -> None:
     app = QApplication(sys.argv)
-
     app.setWindowIcon(QIcon(str(resource_path("icon.ico"))))
-    settings_repository = SettingsRepository()
-    settings = settings_repository.load()
-    session = ChatSession()
-    provider = ProviderFactory.create(settings.provider)
 
-    chat_view = ChatView()
-    settings_view = SettingsView(parent=chat_view)
+    application_manager = ApplicationManager()
+    application_manager.show()
 
-    controller = ChatbotController(
-        chat_view=chat_view,
-        settings_view=settings_view,
-        session=session,
-        settings_repository=settings_repository,
-        provider=provider,
-    )
+    # Keep the manager alive for the lifetime of the app.
+    app.application_manager = application_manager
 
-    # Keep the controller alive for the lifetime of the main window.
-    chat_view.controller = controller
-
-    chat_view.show()
     sys.exit(app.exec())
