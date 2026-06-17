@@ -11,6 +11,7 @@ from promptlet_client.worker.chat_request_worker import ChatRequestWorker
 
 class ChatController(QObject):
     settings_requested = Signal()
+    message_history_changed = Signal()
     closing = Signal()
 
     def __init__(
@@ -37,6 +38,15 @@ class ChatController(QObject):
         self.chat_view.reset_requested.connect(self.reset_chat)
         self.chat_view.question_submitted.connect(self.ask)
         self.chat_view.closing.connect(self.closing.emit)
+
+    @Slot(object)
+    def set_session(self, session: ChatSession) -> None:
+        if self._thread is not None:
+            return
+
+        self.session = session
+        self.chat_view.render_session(self.session)
+        self.chat_view.question_input.setFocus()
 
     @Slot(ChatbotSettings)
     def update_settings(self, settings: ChatbotSettings) -> None:
@@ -72,6 +82,7 @@ class ChatController(QObject):
         )
 
         self.session.add_user_message(question)
+        self.message_history_changed.emit()
         self.chat_view.set_waiting(True)
         self._start_worker()
 
@@ -99,6 +110,7 @@ class ChatController(QObject):
     @Slot(str)
     def _handle_answer(self, answer: str) -> None:
         self.session.add_assistant_message(answer)
+        self.message_history_changed.emit()
         self.chat_view.add_chat_line(
             "Assistant",
             answer,
@@ -122,4 +134,5 @@ class ChatController(QObject):
             return
 
         self.session.clear()
+        self.message_history_changed.emit()
         self.chat_view.clear_chat()

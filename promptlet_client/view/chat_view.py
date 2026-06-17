@@ -17,8 +17,8 @@ class ChatView(QWidget):
     question_submitted = Signal(str)
     closing = Signal()
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
 
         self.setWindowTitle("Promptlet")
         self.resize(1200, 800)
@@ -86,6 +86,14 @@ class ChatView(QWidget):
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
+
+    def render_session(self, session) -> None:
+        self.clear_chat()
+        for message in session.messages:
+            if message.role == "user":
+                self.add_chat_line("User", message.content, "#00bfff", is_user=True)
+            elif message.role == "assistant":
+                self.add_chat_line("Assistant", message.content, "#21f39b", is_user=False)
 
     def closeEvent(self, event) -> None:
         self.closing.emit()
