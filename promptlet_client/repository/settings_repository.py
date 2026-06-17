@@ -1,11 +1,13 @@
 import json
+import os
 from pathlib import Path
 
 from promptlet_client.model.chatbot_settings import ChatbotSettings
 
 
 class SettingsRepository:
-    SETTINGS_FILE = Path(__file__).resolve().parents[2] / "settings.json"
+    APP_DIR = Path(os.getenv("APPDATA")) / "Promptlet"
+    SETTINGS_FILE = APP_DIR / "settings.json"
 
     def load(self) -> ChatbotSettings:
         defaults = ChatbotSettings()
@@ -26,10 +28,12 @@ class SettingsRepository:
             api_key=data.get("api_key") or defaults.api_key,
             base_url=data.get("base_url") or defaults.base_url,
             model=data.get("model") or defaults.model,
-            max_tokens=int(data.get("max_tokens")) or defaults.max_tokens
+            max_tokens=int(data.get("max_tokens") or defaults.max_tokens),
         )
 
     def save(self, settings: ChatbotSettings) -> None:
+        self.APP_DIR.mkdir(parents=True, exist_ok=True)
+
         data = {
             "provider": settings.provider,
             "attributes": settings.attributes,
