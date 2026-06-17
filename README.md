@@ -18,17 +18,10 @@ Supports cloud providers and local models through a very simple interface.
 ## Screenshots
 
 
-<table>
-  <tr>
-    <td>
+<img src="https://raw.githubusercontent.com/onurtas1993/images/main/promptlet_screenshot1.png" />
 
-<img width="100%" alt="Screenshot_20251228-101040-portrait-imageonline co-merged" src="https://raw.githubusercontent.com/onurtas1993/images/refs/heads/main/promptlet_screenshot1.png" />
-    </td>
-    <td>
-<img width="100%" alt="Screenshot_20251228-101040-portrait-imageonline co-merged" src="https://raw.githubusercontent.com/onurtas1993/images/refs/heads/main/promptlet_screenshot2.png" />
-    </td>
-  </tr>
-</table>
+<img src="https://raw.githubusercontent.com/onurtas1993/images/main/promptlet_screenshot2.png" />
+
  
 
 ## Features
