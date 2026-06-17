@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from promptlet_client.utils.path_resolver import resource_path
+
 from PySide6.QtCore import QFile
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QLayout, QVBoxLayout, QWidget
@@ -12,7 +14,7 @@ def load_ui(owner: QWidget, ui_name: str | None = None) -> QWidget:
         load_ui(self)
     """
     caller_file = Path(owner.__class__.__module__.replace(".", "/"))
-    ui_path = Path(__file__).with_name(ui_name or f"{caller_file.name}.ui")
+    ui_path = resource_path(f"view/{ui_name or f'{caller_file.name}.ui'}")
 
     ui_file = QFile(str(ui_path))
     if not ui_file.open(QFile.ReadOnly):

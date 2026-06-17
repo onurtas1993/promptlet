@@ -1,6 +1,7 @@
 import sys
 
-from pathlib import Path
+from promptlet_client.utils.path_resolver import resource_path
+
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 
@@ -15,9 +16,7 @@ from promptlet_client.view.settings_view import SettingsView
 def main() -> None:
     app = QApplication(sys.argv)
 
-    icon_path = Path(__file__).parent / "icon.png"
-    app.setWindowIcon(QIcon(str(icon_path)))
-
+    app.setWindowIcon(QIcon(str(resource_path("icon.ico"))))
     settings_repository = SettingsRepository()
     settings = settings_repository.load()
     session = ChatSession()

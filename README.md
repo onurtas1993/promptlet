@@ -2,7 +2,7 @@
   <tr>
     <td>
 
-<img src="./promptlet_client/icon.png" width="128"/>
+<img src="./promptlet_client/icon.ico" width="128"/>
     </td>
     <td>
 
