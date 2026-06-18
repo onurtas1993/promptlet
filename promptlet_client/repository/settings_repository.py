@@ -6,7 +6,7 @@ from promptlet_client.model.chatbot_settings import ChatbotSettings
 
 
 class SettingsRepository:
-    APP_DIR = Path(os.getenv("APPDATA")) / "Promptlet"
+    APP_DIR = Path(os.getenv("APPDATA") or Path.home() / ".config") / "Promptlet"
     SETTINGS_FILE = APP_DIR / "settings.json"
 
     def load(self) -> ChatbotSettings:
