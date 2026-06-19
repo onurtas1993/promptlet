@@ -42,38 +42,3 @@ pip install -r requirements.txt
 python -m promptlet_client
 ```
 
-## Example Configuration
-
-```json
-{
-    "provider": "anthropic",
-    "api_key": "sk-opus-XXXXX",
-    "base_url": "https://PROXY_OR_API_URL_HERE",
-    "model": "claude-opus-4-8",
-    "max_tokens": 4096
-}
-```
-
-LM Studio example:
-
-```json
-{
-    "provider": "openai",
-    "api_key": "",
-    "base_url": "http://127.0.0.1:1234",
-    "model": "gemma-4-e2b-it"
-}
-```
-
-## Project Structure
-
-```text
-promptlet_client/
-├── controller/
-├── model/
-├── provider/
-├── repository/
-├── service/
-├── view/
-└── worker/
-```
