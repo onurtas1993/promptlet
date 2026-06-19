@@ -7,10 +7,7 @@
     <td>
 
 # Promptlet
-
-A lightweight desktop chat client for LLMs that lets you use your own API keys instead of paying for subscriptions.
-
-Supports cloud providers and local models through a very simple interface.
+This app exists for one reason: cheaper AI chat. Instead of paying fixed monthly subscription fees, you use your own API key through a proxy and pay only for what you use. No account creation, no cloud sync, no hidden services, and no unnecessary complexity. Just launch the app and start chatting.
     </td>
   </tr>
 </table>
