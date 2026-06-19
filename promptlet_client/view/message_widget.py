@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QWidget
+from markdown import markdown
 
 
 class MessageWidget(QWidget):
@@ -21,16 +22,16 @@ class MessageWidget(QWidget):
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
-        text = text.replace("\n", "<br>")
+        text = markdown(text, extensions=["fenced_code", "tables"])
 
         label.setText(
             f"""
             <span style="color:white; font-weight:bold;">
                 {speaker}:
             </span>
-            <span style="color:{color};">
+            <div style="color:{color};">
                 {text}
-            </span>
+            </div>
             """
         )
 
