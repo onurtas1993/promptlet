@@ -28,7 +28,7 @@ class OpenAIProvider(BaseProvider):
             json={
                 "model": settings.model,
                 "messages": openai_messages,
-                "max_tokens": settings.max_tokens
+                "max_completion_tokens": settings.max_tokens
             },
             timeout=(5, 30),
         )
