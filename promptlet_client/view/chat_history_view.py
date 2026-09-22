@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QListWidgetItem, QWidget
+from PySide6.QtWidgets import QDialog, QLabel, QListWidgetItem, QPushButton, QVBoxLayout, QWidget
 
 from promptlet_client.view.styles import (
     DELETE_BUTTON_STYLESHEET,
@@ -27,14 +27,29 @@ class ChatHistoryView(QWidget):
     def _apply_styles(self) -> None:
         self.setStyleSheet(HISTORY_STYLESHEET)
         self.new_chat_btn.setStyleSheet(NEW_CHAT_BUTTON_STYLESHEET)
-        self.new_pdf_chat_btn.setStyleSheet(NEW_CHAT_BUTTON_STYLESHEET)
         self.delete_chat_btn.setStyleSheet(DELETE_BUTTON_STYLESHEET)
 
     def _connect_signals(self) -> None:
-        self.new_chat_btn.clicked.connect(lambda: self.new_chat_requested.emit("normal"))
-        self.new_pdf_chat_btn.clicked.connect(lambda: self.new_chat_requested.emit("pdf"))
+        self.new_chat_btn.clicked.connect(self._choose_chat_type)
         self.delete_chat_btn.clicked.connect(self._emit_delete_requested)
         self.chat_list.currentItemChanged.connect(self._emit_chat_selected)
+
+    def _choose_chat_type(self) -> None:
+        dialog = QDialog(self)
+        dialog.setWindowTitle("New Chat")
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(QLabel("What would you like to chat with?"))
+        normal_button = QPushButton("Normal Chat")
+        pdf_button = QPushButton("Chat with PDF")
+        for button in (normal_button, pdf_button):
+            button.setStyleSheet(NEW_CHAT_BUTTON_STYLESHEET)
+            layout.addWidget(button)
+        normal_button.clicked.connect(lambda: dialog.done(1))
+        pdf_button.clicked.connect(lambda: dialog.done(2))
+        choice = dialog.exec()
+        if choice in (1, 2):
+            self.new_chat_requested.emit("normal" if choice == 1 else "pdf")
+        dialog.deleteLater()
 
     def set_chats(self, chats, active_chat_id: str | None) -> None:
         self.chat_list.blockSignals(True)
@@ -42,8 +57,8 @@ class ChatHistoryView(QWidget):
 
         selected_row = 0
         for row, chat in enumerate(chats):
-            kind = "PDF" if chat.session.chat_type == "pdf" else "Chat"
-            item = QListWidgetItem(f"[{kind}] {chat.title}")
+            prefix = "[PDF] " if chat.session.chat_type == "pdf" else ""
+            item = QListWidgetItem(f"{prefix}{chat.title}")
             item.setData(256, chat.id)
             self.chat_list.addItem(item)
             if chat.id == active_chat_id:

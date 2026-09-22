@@ -80,6 +80,8 @@ class DocumentChatTests(unittest.TestCase):
         self.assertFalse(view.attach_pdf_btn.isEnabled())
         self.wait_request(controller)
         self.assertEqual(view.selected_document(), DOCUMENT)
+        self.assertEqual(view.document_input.currentText(), "example.pdf")
+        self.assertEqual(view.document_input.itemText(1), "example.pdf")
         controller.ask("What is on page three?")
         self.wait_request(controller)
         ask.assert_called_once_with(document_id="doc-1", question="What is on page three?", model="pdf-model")
@@ -135,12 +137,23 @@ class DocumentChatTests(unittest.TestCase):
         repository = Mock()
         repository.load.return_value = [ChatHistoryItem()]
         controller = ChatHistoryController(view, repository)
-        view.new_pdf_chat_btn.click()
+        from PySide6.QtCore import QTimer
+        def choose(label):
+            dialog = self.app.activeModalWidget()
+            next(button for button in dialog.findChildren(QPushButton) if button.text() == label).click()
+        QTimer.singleShot(0, lambda: choose("Chat with PDF"))
+        view.new_chat_btn.click()
         pdf_id = controller.active_chat_id
         self.assertEqual(controller.active_chat.session.chat_type, "pdf")
         self.assertIn("[PDF]", view.chat_list.item(0).text())
+        QTimer.singleShot(0, lambda: choose("Normal Chat"))
         view.new_chat_btn.click()
         self.assertEqual(controller.active_chat.session.chat_type, "normal")
+        self.assertEqual(view.chat_list.item(0).text(), controller.active_chat.title)
+        count = len(controller.chats)
+        QTimer.singleShot(0, lambda: self.app.activeModalWidget().reject())
+        view.new_chat_btn.click()
+        self.assertEqual(len(controller.chats), count)
         controller.select_chat(pdf_id)
         self.assertEqual(controller.active_chat.session.chat_type, "pdf")
         view.close()

@@ -62,7 +62,7 @@ document-answer model ID is stored separately; blank means the backend default.
 using the URL currently entered in the dialog. Save persists the configuration.
 No service requests occur automatically or while the integration is disabled.
 
-Create either a **Normal chat** or a **PDF chat** using the sidebar buttons. The
+Click **New Chat** in the sidebar, then choose **Normal Chat** or **Chat with PDF**. The
 type is saved with the chat and cannot be switched within a conversation. Normal
 chats send conversation history to the configured provider. PDF chats display an
 explicit notice that each question is independent.

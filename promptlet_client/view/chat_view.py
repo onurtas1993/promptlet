@@ -1,5 +1,5 @@
 from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QComboBox, QFileDialog, QWidget
 
 from promptlet_client.view.message_widget import MessageWidget
 from promptlet_client.view.ui_loader import load_ui
@@ -42,6 +42,9 @@ class ChatView(QWidget):
         self.status_label.setStyleSheet("color:#aaaaaa; font-size:14px;")
         self.chat_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.chat_area.verticalScrollBar().rangeChanged.connect(self._scroll_after_content_resize)
+        self.document_input.setEditable(True)
+        self.document_input.setInsertPolicy(QComboBox.NoInsert)
+        self.document_input.lineEdit().setReadOnly(True)
 
     def _connect_signals(self) -> None:
         self.settings_btn.clicked.connect(self.settings_requested.emit)
@@ -49,6 +52,7 @@ class ChatView(QWidget):
         self.refresh_documents_btn.clicked.connect(self.documents_requested.emit)
         self.attach_pdf_btn.clicked.connect(self._choose_pdf)
         self.document_input.currentIndexChanged.connect(self._update_document_notice)
+        self.document_input.currentIndexChanged.connect(self._show_selected_document_name)
         self.document_input.currentIndexChanged.connect(lambda: self.document_changed.emit(self.selected_document()))
         self.question_input.returnPressed.connect(self._emit_question)
 
@@ -68,6 +72,12 @@ class ChatView(QWidget):
     def selected_document(self) -> dict | None:
         return self.document_input.currentData()
 
+    def _show_selected_document_name(self) -> None:
+        self.document_input.lineEdit().setText(
+            self.document_input.itemText(self.document_input.currentIndex())
+            if self.document_input.currentIndex() >= 0 else "Select a prepared PDF"
+        )
+
     def configure_documents(self, enabled: bool, chat_type: str = "normal") -> None:
         self._documents_enabled = enabled
         self._chat_type = chat_type
@@ -81,10 +91,11 @@ class ChatView(QWidget):
         self.document_input.clear()
         self.document_input.addItem("Select a prepared PDF", None)
         for document in documents:
-            self.document_input.addItem(f"{document['name']} [{document['document_id']}]", document)
+            self.document_input.addItem(document["name"], document)
             if document["document_id"] == selected_id:
                 self.document_input.setCurrentIndex(self.document_input.count() - 1)
         self.document_input.blockSignals(False)
+        self._show_selected_document_name()
         self._update_document_notice()
 
     def _update_document_notice(self) -> None:

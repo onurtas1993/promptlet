@@ -48,12 +48,9 @@
    <item>
     <widget class="QPushButton" name="new_chat_btn">
      <property name="text">
-      <string>+ Normal chat</string>
+      <string>New Chat</string>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="new_pdf_chat_btn"><property name="text"><string>+ PDF chat</string></property></widget>
    </item>
    <item>
     <widget class="QListWidget" name="chat_list">
