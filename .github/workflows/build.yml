@@ -1,0 +1,153 @@
+name: Build desktop app
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            runner: windows-latest
+            artifact_path: dist/Promptlet.exe
+          - os: ubuntu
+            runner: ubuntu-latest
+            artifact_path: dist/Promptlet
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install Ubuntu Qt runtime library
+        if: matrix.os == 'ubuntu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends libegl1
+
+      - name: Install application and build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller==6.21.0
+
+      - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m unittest discover -s tests -v
+
+      - name: Build Qt application
+        shell: bash
+        run: |
+          args=(
+            --noconfirm
+            --clean
+            --onefile
+            --name Promptlet
+            --paths .
+            --add-data 'promptlet_client/icon.ico:.'
+          )
+          for ui in promptlet_client/view/*.ui; do
+            args+=(--add-data "$ui:view")
+          done
+          if [[ '${{ matrix.os }}' == 'windows' ]]; then
+            args+=(--windowed --icon promptlet_client/icon.ico)
+          fi
+          python -m PyInstaller "${args[@]}" promptlet_client/__main__.py
+
+      - name: Smoke test bundled Qt application
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHON_CODE: |
+            import pathlib
+            import subprocess
+            import sys
+            import time
+
+            executable = pathlib.Path('dist/Promptlet.exe' if sys.platform == 'win32' else 'dist/Promptlet')
+            if not executable.is_file():
+                raise SystemExit(f'Missing executable: {executable}')
+            process = subprocess.Popen([str(executable.resolve())])
+            try:
+                time.sleep(4)
+                if process.poll() is not None:
+                    raise SystemExit(f'Bundled application exited during startup: {process.returncode}')
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+        run: python -c "$PYTHON_CODE"
+        shell: bash
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Promptlet-${{ matrix.os }}-${{ github.ref_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download built executables
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p release-assets/windows release-assets/ubuntu
+          gh run download "$GITHUB_RUN_ID" \
+            --name "Promptlet-windows-$GITHUB_REF_NAME" \
+            --dir release-assets/windows
+          gh run download "$GITHUB_RUN_ID" \
+            --name "Promptlet-ubuntu-$GITHUB_REF_NAME" \
+            --dir release-assets/ubuntu
+
+      - name: Package executables with license
+        run: |
+          zip -j "release-assets/Promptlet-windows-$GITHUB_REF_NAME.zip" \
+            release-assets/windows/Promptlet.exe \
+            LICENSE
+          zip -j "release-assets/Promptlet-ubuntu-$GITHUB_REF_NAME.zip" \
+            release-assets/ubuntu/Promptlet \
+            LICENSE
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release delete-asset "$GITHUB_REF_NAME" Promptlet-windows.exe --yes || true
+            gh release delete-asset "$GITHUB_REF_NAME" Promptlet-ubuntu --yes || true
+            gh release upload "$GITHUB_REF_NAME" \
+              "release-assets/Promptlet-windows-$GITHUB_REF_NAME.zip" \
+              "release-assets/Promptlet-ubuntu-$GITHUB_REF_NAME.zip" \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "release-assets/Promptlet-windows-$GITHUB_REF_NAME.zip" \
+              "release-assets/Promptlet-ubuntu-$GITHUB_REF_NAME.zip" \
+              --verify-tag \
+              --generate-notes
+          fi

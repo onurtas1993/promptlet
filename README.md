@@ -42,6 +42,21 @@ pip install -r requirements.txt
 python -m promptlet_client
 ```
 
+## Tagged desktop builds
+
+Pushing a version tag such as `v1.0.0` runs the Windows and Ubuntu build jobs in
+GitHub Actions. Each job tests the app, builds a single-file PyInstaller executable,
+smoke tests Qt startup, creates a GitHub Release for the tag, and attaches separate
+Windows and Ubuntu ZIP files. Each ZIP contains the platform's single executable
+and the GPL-3.0 `LICENSE` file. On Ubuntu, restore executable permission after
+extracting if needed with `chmod +x Promptlet`. The executable
+embeds the Qt `.ui` files and app icon; the Windows executable also uses that icon.
+PyInstaller is a build tool installed only by the workflow.
+
+## License
+
+Promptlet is licensed under the GNU General Public License v3.0. See `LICENSE`.
+
 ## Local LM Studio
 
 Start LM Studio's server separately. New settings default to the `openai`
