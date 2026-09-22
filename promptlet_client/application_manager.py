@@ -38,9 +38,15 @@ class ApplicationManager(QObject):
         )
 
         self._connect_controllers()
+        self.application_view.can_close = lambda: not (
+            self.chat_controller.busy or self.settings_controller.busy
+        )
         self.chat_controller.set_session(self.chat_history_controller.active_chat.session)
 
     def _connect_controllers(self) -> None:
+        self.chat_controller.busy_changed.connect(
+            self.application_view.chat_history_view.setDisabled
+        )
         self.chat_controller.settings_requested.connect(
             self.settings_controller.open_settings
         )

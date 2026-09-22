@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 import os
 from pathlib import Path
 
@@ -29,19 +30,15 @@ class SettingsRepository:
             base_url=data.get("base_url") or defaults.base_url,
             model=data.get("model") or defaults.model,
             max_tokens=int(data.get("max_tokens") or defaults.max_tokens),
+            askthebook_enabled=bool(data.get("askthebook_enabled", False)),
+            askthebook_url=data.get("askthebook_url") or defaults.askthebook_url,
+            askthebook_model=data.get("askthebook_model", ""),
         )
 
     def save(self, settings: ChatbotSettings) -> None:
         self.APP_DIR.mkdir(parents=True, exist_ok=True)
 
-        data = {
-            "provider": settings.provider,
-            "attributes": settings.attributes,
-            "api_key": settings.api_key,
-            "base_url": settings.base_url,
-            "model": settings.model,
-            "max_tokens": settings.max_tokens,
-        }
+        data = asdict(settings)
 
         with open(self.SETTINGS_FILE, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)

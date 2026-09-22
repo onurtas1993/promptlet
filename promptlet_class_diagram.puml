@@ -1,0 +1,238 @@
+@startuml Promptlet_Class_Diagram
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Promptlet MVC Class Diagram
+
+package "Application" {
+  class ApplicationManager {
+    - settings_repository: SettingsRepository
+    - history_repository: HistoryRepository
+    - application_view: ApplicationView
+    - settings_view: SettingsView
+    - settings_controller: SettingsController
+    - chat_history_controller: ChatHistoryController
+    - chat_controller: ChatController
+    + show(): void
+    - _connect_controllers(): void
+  }
+}
+
+package "Controllers" {
+  class ChatController {
+    - chat_view: ChatView
+    - session: ChatSession
+    - settings: ChatbotSettings
+    - provider: BaseProvider
+    - _thread: QThread
+    - _worker: ChatRequestWorker
+    + set_session(session: ChatSession): void
+    + update_settings(settings: ChatbotSettings): void
+    + ask(question: str): void
+    + reset_chat(): void
+    + add_system_message(message: str, color: str): void
+  }
+
+  class SettingsController {
+    - settings_view: SettingsView
+    - settings_repository: SettingsRepository
+    - settings: ChatbotSettings
+    + open_settings(): void
+    + save_settings(settings: ChatbotSettings): void
+    + save_current_settings(): void
+  }
+
+  class ChatHistoryController {
+    - chat_history_view: ChatHistoryView
+    - history_repository: HistoryRepository
+    - chats: list<ChatHistoryItem>
+    - active_chat_id: str
+    + active_chat: ChatHistoryItem
+    + create_chat(): void
+    + select_chat(chat_id: str): void
+    + delete_chat(chat_id: str): void
+    + save_active_chat(): void
+    + save_all(): void
+  }
+}
+
+package "Views" {
+  class ApplicationView {
+    + chat_history_view: ChatHistoryView
+    + chat_view: ChatView
+    + closing: Signal
+    + closeEvent(event): void
+  }
+
+  class ChatView {
+    + settings_requested: Signal
+    + reset_requested: Signal
+    + question_submitted: Signal
+    + closing: Signal
+    + clear_question(): void
+    + set_waiting(waiting: bool): void
+    + add_chat_line(speaker: str, text: str, color: str, is_user: bool): void
+    + render_session(session: ChatSession): void
+    + clear_chat(): void
+  }
+
+  class ChatHistoryView {
+    + new_chat_requested: Signal
+    + chat_selected: Signal
+    + chat_deleted: Signal
+    + set_chats(chats: list<ChatHistoryItem>, active_chat_id: str): void
+  }
+
+  class SettingsView {
+    + settings_saved: Signal
+    + set_settings(settings: ChatbotSettings): void
+    + current_settings(): ChatbotSettings
+  }
+
+  class MessageWidget
+}
+
+package "Models" {
+  class ChatbotSettings <<dataclass>> {
+    + provider: str
+    + attributes: str
+    + api_key: str
+    + base_url: str
+    + model: str
+    + max_tokens: int
+  }
+
+  class ChatSession <<dataclass>> {
+    + messages: list<ChatMessage>
+    + add_user_message(content: str): void
+    + add_assistant_message(content: str): void
+    + clear(): void
+    + to_payload(): list<dict>
+  }
+
+  class ChatMessage <<dataclass>> {
+    + role: str
+    + content: str
+    + to_payload(): dict
+  }
+
+  class ChatHistoryItem <<dataclass>> {
+    + id: str
+    + title: str
+    + session: ChatSession
+    + created_at: str
+    + updated_at: str
+    + touch(): void
+    + refresh_title_from_session(): void
+    + to_dict(): dict
+    + from_dict(data: dict): ChatHistoryItem
+  }
+}
+
+package "Repositories" {
+  class SettingsRepository {
+    + APP_DIR: Path
+    + SETTINGS_FILE: Path
+    + load(): ChatbotSettings
+    + save(settings: ChatbotSettings): void
+  }
+
+  class HistoryRepository {
+    + APP_DIR: Path
+    + HISTORY_FILE: Path
+    + load(): list<ChatHistoryItem>
+    + save(chats: list<ChatHistoryItem>): void
+  }
+}
+
+package "Providers" {
+  abstract class BaseProvider {
+    + send_message(settings: ChatbotSettings, system_prompt: str, messages: list<dict>): str
+  }
+
+  class AnthropicProvider {
+    + send_message(settings: ChatbotSettings, system_prompt: str, messages: list<dict>): str
+  }
+
+  class OpenAIProvider {
+    + send_message(settings: ChatbotSettings, system_prompt: str, messages: list<dict>): str
+  }
+
+  class ProviderFactory {
+    + create(provider_name: str): BaseProvider
+  }
+}
+
+package "Workers" {
+  class ChatRequestWorker {
+    - provider: BaseProvider
+    - settings: ChatbotSettings
+    - system_prompt: str
+    - messages: list<dict>
+    + run(): void
+  }
+}
+
+' QObject <|-- ApplicationManager
+' QObject <|-- ChatController
+' QObject <|-- SettingsController
+' QObject <|-- ChatHistoryController
+' QObject <|-- ChatRequestWorker
+' QWidget <|-- ApplicationView
+' QWidget <|-- ChatView
+' QWidget <|-- ChatHistoryView
+' QWidget <|-- MessageWidget
+' QDialog <|-- SettingsView
+
+ApplicationManager *-- ApplicationView
+ApplicationManager *-- SettingsView
+ApplicationManager *-- ChatController
+ApplicationManager *-- SettingsController
+ApplicationManager *-- ChatHistoryController
+ApplicationManager *-- SettingsRepository
+ApplicationManager *-- HistoryRepository
+
+ApplicationView *-- ChatHistoryView
+ApplicationView *-- ChatView
+
+ChatController --> ChatView : controls
+ChatController --> ChatSession : active session
+ChatController --> ChatbotSettings : uses
+ChatController --> BaseProvider : uses
+ChatController ..> ProviderFactory : recreates provider
+ChatController ..> ChatRequestWorker : starts
+ChatController ..> ChatHistoryController : message_history_changed
+
+SettingsController --> SettingsView : controls
+SettingsController --> SettingsRepository : loads/saves
+SettingsController --> ChatbotSettings : owns
+SettingsController ..> ChatController : settings_changed
+
+ChatHistoryController --> ChatHistoryView : controls
+ChatHistoryController --> HistoryRepository : loads/saves
+ChatHistoryController o-- "0..*" ChatHistoryItem : manages
+ChatHistoryController ..> ChatController : chat_selected
+
+ChatHistoryItem *-- ChatSession
+ChatSession *-- "0..*" ChatMessage
+
+HistoryRepository ..> ChatHistoryItem : serializes
+SettingsRepository ..> ChatbotSettings : serializes
+
+BaseProvider <|-- AnthropicProvider
+BaseProvider <|-- OpenAIProvider
+ProviderFactory ..> BaseProvider : creates
+ProviderFactory ..> AnthropicProvider
+ProviderFactory ..> OpenAIProvider
+
+ChatRequestWorker --> BaseProvider
+ChatRequestWorker --> ChatbotSettings
+
+ChatView ..> MessageWidget : creates
+ChatView ..> ChatSession : renders
+ChatHistoryView ..> ChatHistoryItem : displays
+SettingsView ..> ChatbotSettings : edits
+
+@enduml

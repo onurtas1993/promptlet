@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Signal, Slot
 
 from promptlet_client.model.chat_history_item import ChatHistoryItem
+from promptlet_client.model.chat_session import ChatSession
 from promptlet_client.repository.history_repository import HistoryRepository
 from promptlet_client.view.chat_history_view import ChatHistoryView
 
@@ -44,9 +45,11 @@ class ChatHistoryController(QObject):
     def _save(self) -> None:
         self.history_repository.save(self.chats)
 
-    @Slot()
-    def create_chat(self) -> None:
-        chat = ChatHistoryItem()
+    @Slot(str)
+    def create_chat(self, chat_type: str = "normal") -> None:
+        if chat_type not in ("normal", "pdf"):
+            raise ValueError("Unknown chat type")
+        chat = ChatHistoryItem(session=ChatSession(chat_type=chat_type))
         self.chats.insert(0, chat)
         self.active_chat_id = chat.id
         self._save()

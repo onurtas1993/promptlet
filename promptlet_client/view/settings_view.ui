@@ -43,7 +43,7 @@
    <item>
     <widget class="QLabel" name="provider_label">
      <property name="text">
-      <string>Provider</string>
+      <string>Normal-chat provider</string>
      </property>
     </widget>
    </item>
@@ -74,7 +74,7 @@
    <item>
     <widget class="QLabel" name="key_label">
      <property name="text">
-      <string>API Key</string>
+      <string>API Key (optional for local LM Studio)</string>
      </property>
     </widget>
    </item>
@@ -88,7 +88,7 @@
    <item>
     <widget class="QLabel" name="base_url_label">
      <property name="text">
-      <string>Base URL</string>
+      <string>Normal-chat server URL (without /v1)</string>
      </property>
     </widget>
    </item>
@@ -103,7 +103,49 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="model_input"/>
+    <widget class="QLineEdit" name="model_input">
+     <property name="placeholderText"><string>Exact model ID from your inference server</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="lm_studio_btn">
+     <property name="text"><string>Use local LM Studio defaults</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="askthebook_enabled_input">
+     <property name="text"><string>Enable AskTheBook integration</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="askthebook_url_label">
+     <property name="text"><string>AskTheBook service URL</string></property>
+    </widget>
+   </item>
+   <item><widget class="QLineEdit" name="askthebook_url_input"/></item>
+   <item>
+    <widget class="QLabel" name="askthebook_model_label">
+     <property name="text"><string>AskTheBook generation model ID (blank uses server default)</string></property>
+    </widget>
+   </item>
+   <item><widget class="QLineEdit" name="askthebook_model_input"/></item>
+   <item>
+    <widget class="QLabel" name="askthebook_generation_notice">
+     <property name="wordWrap"><bool>true</bool></property>
+     <property name="text"><string>PDF answers use AskTheBook's independently configured LM Studio server. The normal-chat endpoint and API key above do not apply. The model ID must be available on that server.</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="refresh_documents_btn">
+     <property name="text"><string>Refresh prepared documents</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="documents_output">
+     <property name="readOnly"><bool>true</bool></property>
+     <property name="maximumHeight"><number>120</number></property>
+     <property name="placeholderText"><string>Refresh to inspect prepared documents. Attach and select PDFs in the chat window.</string></property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="button_layout">

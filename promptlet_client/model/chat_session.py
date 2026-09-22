@@ -6,9 +6,11 @@ from promptlet_client.model.chat_message import ChatMessage
 @dataclass
 class ChatSession:
     messages: list[ChatMessage] = field(default_factory=list)
+    chat_type: str = "normal"
+    document: dict | None = None
 
-    def add_user_message(self, content: str) -> None:
-        self.messages.append(ChatMessage(role="user", content=content))
+    def add_user_message(self, content: str, document: dict | None = None) -> None:
+        self.messages.append(ChatMessage(role="user", content=content, document=document))
 
     def add_assistant_message(self, content: str) -> None:
         self.messages.append(ChatMessage(role="assistant", content=content))
@@ -17,4 +19,4 @@ class ChatSession:
         self.messages.clear()
 
     def to_payload(self) -> list[dict[str, str]]:
-        return [message.to_payload() for message in self.messages]
+        return [message.to_payload() for message in self.messages if message.document is None]

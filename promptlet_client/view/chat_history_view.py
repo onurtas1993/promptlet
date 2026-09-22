@@ -10,7 +10,7 @@ from promptlet_client.view.ui_loader import load_ui
 
 
 class ChatHistoryView(QWidget):
-    new_chat_requested = Signal()
+    new_chat_requested = Signal(str)
     chat_selected = Signal(str)
     chat_deleted = Signal(str)
 
@@ -27,10 +27,12 @@ class ChatHistoryView(QWidget):
     def _apply_styles(self) -> None:
         self.setStyleSheet(HISTORY_STYLESHEET)
         self.new_chat_btn.setStyleSheet(NEW_CHAT_BUTTON_STYLESHEET)
+        self.new_pdf_chat_btn.setStyleSheet(NEW_CHAT_BUTTON_STYLESHEET)
         self.delete_chat_btn.setStyleSheet(DELETE_BUTTON_STYLESHEET)
 
     def _connect_signals(self) -> None:
-        self.new_chat_btn.clicked.connect(self.new_chat_requested.emit)
+        self.new_chat_btn.clicked.connect(lambda: self.new_chat_requested.emit("normal"))
+        self.new_pdf_chat_btn.clicked.connect(lambda: self.new_chat_requested.emit("pdf"))
         self.delete_chat_btn.clicked.connect(self._emit_delete_requested)
         self.chat_list.currentItemChanged.connect(self._emit_chat_selected)
 
@@ -40,7 +42,8 @@ class ChatHistoryView(QWidget):
 
         selected_row = 0
         for row, chat in enumerate(chats):
-            item = QListWidgetItem(chat.title)
+            kind = "PDF" if chat.session.chat_type == "pdf" else "Chat"
+            item = QListWidgetItem(f"[{kind}] {chat.title}")
             item.setData(256, chat.id)
             self.chat_list.addItem(item)
             if chat.id == active_chat_id:

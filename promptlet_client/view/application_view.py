@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from promptlet_client.view.chat_history_view import ChatHistoryView
 from promptlet_client.view.chat_view import ChatView
@@ -12,6 +12,7 @@ class ApplicationView(QWidget):
 
     def __init__(self) -> None:
         super().__init__()
+        self.can_close = lambda: True
 
         self.setWindowTitle("Promptlet")
         self.resize(1400, 850)
@@ -31,5 +32,9 @@ class ApplicationView(QWidget):
         self.main_layout.addWidget(self.chat_view, 1)
 
     def closeEvent(self, event) -> None:
+        if not self.can_close():
+            QMessageBox.information(self, "Request in progress", "Please wait for the current request to finish before closing Promptlet.")
+            event.ignore()
+            return
         self.closing.emit()
         super().closeEvent(event)

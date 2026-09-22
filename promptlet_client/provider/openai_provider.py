@@ -19,12 +19,13 @@ class OpenAIProvider(BaseProvider):
             *messages,
         ]
 
+        headers = {"content-type": "application/json"}
+        if settings.api_key.strip():
+            headers["authorization"] = f"Bearer {settings.api_key.strip()}"
+
         response = requests.post(
             f"{settings.base_url.rstrip('/')}/v1/chat/completions",
-            headers={
-                "authorization": f"Bearer {settings.api_key}",
-                "content-type": "application/json",
-            },
+            headers=headers,
             json={
                 "model": settings.model,
                 "messages": openai_messages,

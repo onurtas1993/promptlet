@@ -28,7 +28,9 @@ class ChatHistoryItem:
         return {
             "id": self.id,
             "title": self.title,
-            "messages": [message.to_payload() for message in self.session.messages],
+            "chat_type": self.session.chat_type,
+            "document": self.session.document,
+            "messages": [message.to_dict() for message in self.session.messages],
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
@@ -38,10 +40,16 @@ class ChatHistoryItem:
         from promptlet_client.model.chat_message import ChatMessage
 
         session = ChatSession(
+            chat_type=data.get("chat_type", "normal"),
+            document=data.get("document"),
             messages=[
                 ChatMessage(
                     role=str(message.get("role", "")),
                     content=str(message.get("content", "")),
+                    document=message.get("document"),
+                    sources=message.get("sources", []),
+                    warnings=message.get("warnings", []),
+                    response_metadata=message.get("response_metadata", {}),
                 )
                 for message in data.get("messages", [])
                 if isinstance(message, dict)
