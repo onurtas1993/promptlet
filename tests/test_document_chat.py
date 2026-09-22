@@ -72,7 +72,7 @@ class DocumentChatTests(unittest.TestCase):
         view = ChatView()
         provider = Mock()
         provider.send_message.return_value = "Normal answer"
-        settings = ChatbotSettings(askthebook_enabled=True, model="normal-model", askthebook_model="pdf-model")
+        settings = ChatbotSettings(model="normal-model", askthebook_model="pdf-model")
         session = ChatSession(chat_type="pdf")
         controller = ChatController(view, session, settings, provider)
         self.assertTrue(view.attach_pdf_btn.isEnabled())
@@ -118,7 +118,7 @@ class DocumentChatTests(unittest.TestCase):
         view = ChatView()
         provider = Mock()
         provider.send_message.return_value = "OK"
-        controller = ChatController(view, ChatSession(chat_type="pdf"), ChatbotSettings(askthebook_enabled=True, model="m"), provider)
+        controller = ChatController(view, ChatSession(chat_type="pdf"), ChatbotSettings(model="m"), provider)
         controller.refresh_documents()
         self.wait_request(controller)
         self.assertTrue(view.question_input.isEnabled())

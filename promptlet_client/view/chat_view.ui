@@ -136,7 +136,7 @@
      </layout>
     </widget>
    </item>
-   <item><widget class="QLabel" name="document_notice"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Enable AskTheBook in Settings to attach a PDF.</string></property></widget></item>
+   <item><widget class="QLabel" name="document_notice"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>PDF chat — attach a PDF or select a prepared document.</string></property></widget></item>
    <item>
     <widget class="QLabel" name="status_label">
      <property name="text">

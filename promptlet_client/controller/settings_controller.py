@@ -35,7 +35,7 @@ class SettingsController(QObject):
 
     @Slot(str)
     def refresh_documents(self, base_url: str) -> None:
-        if self.busy or not self.settings_view.current_settings().askthebook_enabled:
+        if self.busy:
             return
         self.settings_view.set_documents_busy(True)
         self._thread = QThread()

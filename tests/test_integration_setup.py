@@ -28,7 +28,7 @@ class IntegrationSetupTests(unittest.TestCase):
             repository = SettingsRepository()
             repository.APP_DIR = Path(directory)
             repository.SETTINGS_FILE = Path(directory) / "settings.json"
-            settings = ChatbotSettings(askthebook_enabled=True, askthebook_url="http://localhost:9000", askthebook_model="my-model")
+            settings = ChatbotSettings(askthebook_url="http://localhost:9000", askthebook_model="my-model")
             repository.save(settings)
             self.assertEqual(repository.load(), settings)
 
@@ -89,10 +89,7 @@ class IntegrationSetupTests(unittest.TestCase):
         repository = Mock()
         repository.load.return_value = ChatbotSettings()
         controller = SettingsController(view, repository)
-        controller.refresh_documents("http://localhost:8000")
-        get.assert_not_called()
-        self.assertFalse(view.refresh_documents_btn.isEnabled())
-        view.askthebook_enabled_input.setChecked(True)
+        self.assertEqual(view.askthebook_group.title(), "AskTheBook Integration")
         view.refresh_documents_btn.click()
         self.assertTrue(controller.busy)
         deadline = time.monotonic() + 3
@@ -102,9 +99,8 @@ class IntegrationSetupTests(unittest.TestCase):
         self.assertFalse(controller.busy)
         self.assertIn("book.pdf", view.documents_output.toPlainText())
         self.assertTrue(view.refresh_documents_btn.isEnabled())
-        view.lm_studio_btn.click()
-        self.assertEqual(view.current_settings().base_url, "http://127.0.0.1:1234")
-        self.assertEqual(view.current_settings().model, "")
+        self.assertEqual(view.base_url_input.placeholderText(), "http://127.0.0.1:1234")
+        self.assertEqual(view.key_input.placeholderText(), "Optional for local LLM")
         view.close()
 
 

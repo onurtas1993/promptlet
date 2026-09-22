@@ -83,17 +83,20 @@
      <property name="echoMode">
       <enum>QLineEdit::EchoMode::Password</enum>
      </property>
+     <property name="placeholderText"><string>Optional for local LLM</string></property>
     </widget>
    </item>
    <item>
     <widget class="QLabel" name="base_url_label">
      <property name="text">
-      <string>Normal-chat server URL (without /v1)</string>
+      <string>Endpoint URL</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="base_url_input"/>
+    <widget class="QLineEdit" name="base_url_input">
+     <property name="placeholderText"><string>http://127.0.0.1:1234</string></property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="model_label">
@@ -108,43 +111,40 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="lm_studio_btn">
-     <property name="text"><string>Use local LM Studio defaults</string></property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="askthebook_enabled_input">
-     <property name="text"><string>Enable AskTheBook integration</string></property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="askthebook_url_label">
-     <property name="text"><string>AskTheBook service URL</string></property>
-    </widget>
-   </item>
-   <item><widget class="QLineEdit" name="askthebook_url_input"/></item>
-   <item>
-    <widget class="QLabel" name="askthebook_model_label">
-     <property name="text"><string>AskTheBook generation model ID (blank uses server default)</string></property>
-    </widget>
-   </item>
-   <item><widget class="QLineEdit" name="askthebook_model_input"/></item>
-   <item>
-    <widget class="QLabel" name="askthebook_generation_notice">
-     <property name="wordWrap"><bool>true</bool></property>
-     <property name="text"><string>PDF answers use AskTheBook's independently configured LM Studio server. The normal-chat endpoint and API key above do not apply. The model ID must be available on that server.</string></property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="refresh_documents_btn">
-     <property name="text"><string>Refresh prepared documents</string></property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="documents_output">
-     <property name="readOnly"><bool>true</bool></property>
-     <property name="maximumHeight"><number>120</number></property>
-     <property name="placeholderText"><string>Refresh to inspect prepared documents. Attach and select PDFs in the chat window.</string></property>
+    <widget class="QGroupBox" name="askthebook_group">
+     <property name="title"><string>AskTheBook Integration</string></property>
+     <layout class="QVBoxLayout" name="askthebook_layout">
+      <item>
+       <widget class="QLabel" name="askthebook_url_label">
+        <property name="text"><string>Service URL</string></property>
+       </widget>
+      </item>
+      <item><widget class="QLineEdit" name="askthebook_url_input"/></item>
+      <item>
+       <widget class="QLabel" name="askthebook_model_label">
+        <property name="text"><string>Generation model ID (blank uses server default)</string></property>
+       </widget>
+      </item>
+      <item><widget class="QLineEdit" name="askthebook_model_input"/></item>
+      <item>
+       <widget class="QLabel" name="askthebook_generation_notice">
+        <property name="wordWrap"><bool>true</bool></property>
+        <property name="text"><string>PDF answers use AskTheBook's independently configured LM Studio server. The normal-chat endpoint and API key above do not apply. The model ID must be available on that server.</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refresh_documents_btn">
+        <property name="text"><string>Refresh prepared documents</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="documents_output">
+        <property name="readOnly"><bool>true</bool></property>
+        <property name="maximumHeight"><number>120</number></property>
+        <property name="placeholderText"><string>Refresh to inspect prepared documents. Attach and select PDFs in the chat window.</string></property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>

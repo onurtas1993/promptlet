@@ -40,7 +40,7 @@ class ChatController(QObject):
         self._configure_session()
 
     def _configure_session(self) -> None:
-        self.chat_view.configure_documents(self.settings.askthebook_enabled, self.session.chat_type)
+        self.chat_view.configure_documents(self.session.chat_type)
         documents = list(self._documents)
         selected = self.session.document
         if selected and not any(item["document_id"] == selected["document_id"] for item in documents):
@@ -78,11 +78,9 @@ class ChatController(QObject):
 
     @Slot(ChatbotSettings)
     def update_settings(self, settings: ChatbotSettings) -> None:
-        if (settings.askthebook_url != self.settings.askthebook_url
-                or settings.askthebook_enabled != self.settings.askthebook_enabled):
+        if settings.askthebook_url != self.settings.askthebook_url:
             self._documents = []
-            if settings.askthebook_url != self.settings.askthebook_url:
-                self.session.document = None
+            self.session.document = None
         self.settings = settings
         self._configure_session()
         self.provider = ProviderFactory.create(settings.provider)
@@ -101,9 +99,6 @@ class ChatController(QObject):
 
         document = None
         if self.session.chat_type == "pdf":
-            if not self.settings.askthebook_enabled:
-                self.add_system_message("Enable AskTheBook in Settings to use this PDF chat.")
-                return
             document = self.session.document
             if not document:
                 self.add_system_message("Attach a PDF or select a prepared document before asking a question.")
@@ -143,13 +138,13 @@ class ChatController(QObject):
 
     @Slot()
     def refresh_documents(self) -> None:
-        if self.busy or not self.settings.askthebook_enabled or self.session.chat_type != "pdf":
+        if self.busy or self.session.chat_type != "pdf":
             return
         self._run_worker(AskTheBookWorker(self.settings.askthebook_url), self._handle_documents, "Loading prepared documents...")
 
     @Slot(str)
     def attach_pdf(self, filename: str) -> None:
-        if self.busy or not self.settings.askthebook_enabled or self.session.chat_type != "pdf":
+        if self.busy or self.session.chat_type != "pdf":
             return
         self._run_worker(
             AskTheBookWorker(self.settings.askthebook_url, "upload", filename=filename),

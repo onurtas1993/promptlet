@@ -33,6 +33,21 @@ APP_STYLESHEET = """
         background: transparent;
         font-size: 22px;
     }
+
+    QGroupBox {
+        border: 1px solid #555555;
+        border-radius: 6px;
+        margin-top: 12px;
+        padding: 14px 8px 8px 8px;
+        font-weight: bold;
+        color: #ff9f1c;
+    }
+
+    QGroupBox::title {
+        subcontrol-origin: margin;
+        left: 10px;
+        padding: 0 6px;
+    }
 """
 
 TITLE_STYLESHEET = """

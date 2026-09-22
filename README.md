@@ -65,17 +65,16 @@ so enter the server URL **without `/v1`**. Enter the exact model identifier from
 LM Studio in Settings. No model is chosen automatically. Leave the API key blank
 unless your server requires authentication.
 
-For an existing configuration, use **Use local LM Studio defaults** in Settings,
-enter your model ID, then Save. This button clears the previous model and API key.
-
 ## Optional AskTheBook integration
 
-AskTheBook runs independently in its own repository. Enable it in Settings and
-configure its HTTP URL (suggested default: `http://127.0.0.1:8000`). An optional
+AskTheBook runs independently in its own repository. Configure its HTTP URL in the
+**AskTheBook Integration** settings group (suggested default:
+`http://127.0.0.1:8000`). An optional
 document-answer model ID is stored separately; blank means the backend default.
 **Refresh prepared documents** lists the server's documents in the background,
 using the URL currently entered in the dialog. Save persists the configuration.
-No service requests occur automatically or while the integration is disabled.
+No service requests occur automatically. Promptlet contacts AskTheBook only for
+document refresh, upload, or PDF questions.
 
 Click **New Chat** in the sidebar, then choose **Normal Chat** or **Chat with PDF**. The
 type is saved with the chat and cannot be switched within a conversation. Normal

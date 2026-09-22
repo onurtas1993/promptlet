@@ -30,7 +30,6 @@ class SettingsRepository:
             base_url=data.get("base_url") or defaults.base_url,
             model=data.get("model") or defaults.model,
             max_tokens=int(data.get("max_tokens") or defaults.max_tokens),
-            askthebook_enabled=bool(data.get("askthebook_enabled", False)),
             askthebook_url=data.get("askthebook_url") or defaults.askthebook_url,
             askthebook_model=data.get("askthebook_model", ""),
         )
